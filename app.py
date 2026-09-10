@@ -357,8 +357,14 @@ with tab2:
 
     df = st.session_state.listings.copy()
     st.dataframe(
-        df.style.background_gradient(subset=["Interest Score"], cmap="RdYlGn", vmin=0, vmax=100),
-        use_container_width=True, hide_index=True
+        df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Interest Score": st.column_config.ProgressColumn(
+                "Interest Score", min_value=0, max_value=100, format="%d"
+            )
+        },
     )
 
     st.markdown("#### Commission vs. Market Recommendation")
