@@ -19,6 +19,7 @@ st.set_page_config(
 MEESHO_PURPLE = "#6A1B4D"
 MEESHO_PINK = "#E91E63"
 MEESHO_ORANGE = "#FF6F00"
+MEESHO_GOLD = "#C9A227"
 
 st.markdown(f"""
 <style>
@@ -28,16 +29,8 @@ st.markdown(f"""
         border-radius: 12px;
         margin-bottom: 1.5rem;
     }}
-    .main-header h1 {{
-        color: white;
-        margin: 0;
-        font-size: 2rem;
-    }}
-    .main-header p {{
-        color: #f0e0ea;
-        margin: 0.2rem 0 0 0;
-        font-size: 0.95rem;
-    }}
+    .main-header h1 {{ color: white; margin: 0; font-size: 2rem; }}
+    .main-header p {{ color: #f0e0ea; margin: 0.2rem 0 0 0; font-size: 0.95rem; }}
     .rationale-box {{
         background: #FFF8E1;
         border-left: 4px solid {MEESHO_ORANGE};
@@ -60,10 +53,7 @@ st.markdown(f"""
         border: none;
         padding: 0.5rem 1.5rem;
     }}
-    .stButton>button:hover {{
-        background-color: {MEESHO_PINK};
-        color: white;
-    }}
+    .stButton>button:hover {{ background-color: {MEESHO_PINK}; color: white; }}
     .role-card {{
         border: 2px solid #E8D5E0;
         border-radius: 16px;
@@ -72,8 +62,30 @@ st.markdown(f"""
         background: #FAF5F8;
         height: 100%;
     }}
-    .role-card h2 {{
-        color: {MEESHO_PURPLE};
+    .role-card h2 {{ color: {MEESHO_PURPLE}; }}
+    .tier-card {{
+        background: linear-gradient(135deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 100%);
+        border-radius: 14px;
+        padding: 1.5rem 1.8rem;
+        color: white;
+        margin-bottom: 1rem;
+    }}
+    .tier-card h2 {{ margin: 0 0 0.3rem 0; color: white; }}
+    .tier-card p {{ margin: 0.15rem 0; color: #f5e6ee; }}
+    .perk-badge {{
+        display: inline-block;
+        background: rgba(255,255,255,0.18);
+        border-radius: 20px;
+        padding: 0.25rem 0.8rem;
+        margin: 0.2rem 0.3rem 0.2rem 0;
+        font-size: 0.85rem;
+    }}
+    .at-risk {{
+        background: #FFEBEE;
+        border-left: 4px solid #D32F2F;
+        padding: 0.8rem 1.1rem;
+        border-radius: 6px;
+        margin-top: 0.6rem;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -122,6 +134,12 @@ STATE_ZONE = {
 STATES = list(STATE_ZONE.keys())
 LANGUAGES = ["Hindi", "English", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati",
              "Kannada", "Malayalam", "Punjabi", "Odia", "Assamese", "Bhojpuri"]
+
+# Gamified partnership tier thresholds (every 250 units)
+TIER_STEP = 250
+BASE_STIPEND = 5000        # stipend at first tier (Meesho Partner)
+STIPEND_INCREMENT = 3000   # increase per additional 250-unit tier
+CROSS_PROMO_TIER = 2       # tier number at which cross-promotion unlocks
 
 # ----------------------------------------------------------------------------
 # COMMISSION RECOMMENDATION ENGINE (seller side)
@@ -336,6 +354,114 @@ GENERAL_TACTICS = [
     "Batch-film 3-4 pieces of content in one sitting using the same product to reduce your weekly effort.",
 ]
 
+# ----------------------------------------------------------------------------
+# PARTNERSHIP / GAMIFICATION ENGINE
+# ----------------------------------------------------------------------------
+def get_tier(total_sales):
+    """Every TIER_STEP (250) lifetime units sold advances the influencer one
+    partnership tier. Tier 0 = independent creator, no stipend. Tier 1+ =
+    Meesho Partner with a fixed monthly stipend that grows each tier.
+    Cross-promotion unlocks at CROSS_PROMO_TIER."""
+    tier_number = int(total_sales // TIER_STEP)
+
+    if tier_number == 0:
+        name = "🌱 Independent Creator"
+    elif tier_number == 1:
+        name = "🤝 Meesho Partner"
+    elif tier_number == 2:
+        name = "⭐ Meesho Partner+ (Cross-Promo Eligible)"
+    else:
+        name = f"👑 Meesho Elite Partner — Level {tier_number - 1}"
+
+    stipend = 0 if tier_number == 0 else BASE_STIPEND + (tier_number - 1) * STIPEND_INCREMENT
+    cross_promo = tier_number >= CROSS_PROMO_TIER
+    next_threshold = (tier_number + 1) * TIER_STEP
+    sales_into_tier = total_sales - tier_number * TIER_STEP
+    progress_pct = min(100, sales_into_tier / TIER_STEP * 100)
+    sales_needed_for_next = max(0, next_threshold - total_sales)
+
+    perks = []
+    if tier_number >= 1:
+        perks.append(f"₹{stipend:,}/month fixed stipend")
+    if cross_promo:
+        perks.append("Featured on official Meesho social pages")
+        perks.append("Eligible for collabs with bigger creators")
+    if tier_number == 0:
+        perks.append("Standard per-sale commission only")
+
+    return {
+        "tier_number": tier_number, "name": name, "stipend": stipend,
+        "cross_promo": cross_promo, "next_threshold": next_threshold,
+        "progress_pct": progress_pct, "sales_needed_for_next": sales_needed_for_next,
+        "perks": perks,
+    }
+
+
+def tier_ladder_table(max_tier=5):
+    rows = []
+    for t in range(0, max_tier + 1):
+        sales_required = t * TIER_STEP
+        if t == 0:
+            name, stipend, perk = "Independent Creator", "—", "Per-sale commission only"
+        elif t == 1:
+            name = "Meesho Partner"
+            stipend = f"₹{BASE_STIPEND:,}/mo"
+            perk = "Fixed monthly stipend begins"
+        elif t == 2:
+            name = "Meesho Partner+"
+            stipend = f"₹{BASE_STIPEND + STIPEND_INCREMENT:,}/mo"
+            perk = "+ Cross-promotion on official pages"
+        else:
+            name = f"Meesho Elite Partner Lvl {t - 1}"
+            stipend = f"₹{BASE_STIPEND + (t - 1) * STIPEND_INCREMENT:,}/mo"
+            perk = "+ Priority collabs with bigger creators"
+        rows.append({"Lifetime Sales Needed": sales_required, "Tier": name, "Monthly Stipend": stipend, "Unlocks": perk})
+    return pd.DataFrame(rows)
+
+
+def generate_sales_breakdown(profile, total_sales):
+    """Synthetic, per-profile-consistent breakdown of where an influencer's
+    sales are coming from — category mix, buyer states, and a 6-month trend."""
+    seed = abs(hash(profile["name"] + profile["state"])) % (2**32)
+    rng = np.random.default_rng(seed)
+
+    if total_sales <= 0:
+        empty_cat = pd.DataFrame(columns=["Category", "Units Sold"])
+        empty_state = pd.DataFrame(columns=["State", "Units Sold"])
+        empty_trend = pd.DataFrame({"Units Sold": [0] * 6}, index=["6 mo ago", "5 mo ago", "4 mo ago", "3 mo ago", "2 mo ago", "Last month"])
+        return empty_cat, empty_state, empty_trend, 0
+
+    all_cats = list(CATEGORY_DATA.keys())
+    cat_weights = np.array([3.0 if c in profile["niches"] else 1.0 for c in all_cats])
+    cat_weights = cat_weights / cat_weights.sum()
+    cat_units = rng.multinomial(total_sales, cat_weights)
+    cat_df = pd.DataFrame({"Category": all_cats, "Units Sold": cat_units})
+    cat_df = cat_df[cat_df["Units Sold"] > 0].sort_values("Units Sold", ascending=False).reset_index(drop=True)
+
+    zone = STATE_ZONE[profile["state"]]
+    state_weights = []
+    for s in STATES:
+        if s == profile["state"]:
+            w = 5.0
+        elif STATE_ZONE[s] == zone:
+            w = 2.0
+        else:
+            w = 0.5
+        state_weights.append(w)
+    state_weights = np.array(state_weights)
+    state_weights = state_weights / state_weights.sum()
+    state_units = rng.multinomial(total_sales, state_weights)
+    state_df = pd.DataFrame({"State": STATES, "Units Sold": state_units})
+    state_df = state_df[state_df["Units Sold"] > 0].sort_values("Units Sold", ascending=False).head(8).reset_index(drop=True)
+
+    month_weights = np.array([0.08, 0.10, 0.14, 0.18, 0.22, 0.28])  # rising trend
+    month_units = np.round(month_weights * total_sales).astype(int)
+    months = ["6 mo ago", "5 mo ago", "4 mo ago", "3 mo ago", "2 mo ago", "Last month"]
+    trend_df = pd.DataFrame({"Units Sold": month_units}, index=months)
+
+    this_month_sales = int(month_units[-1])
+    return cat_df, state_df, trend_df, this_month_sales
+
 
 # ----------------------------------------------------------------------------
 # SESSION STATE INIT
@@ -387,8 +513,8 @@ def render_landing():
         st.markdown("""
         <div class="role-card">
             <h2>🎥 Influencer</h2>
-            <p>Pick your niche and region, discover sellers matched to you, and get
-            ready-to-use content ideas — no top-down brand assignment.</p>
+            <p>Pick your niche and region, discover sellers matched to you, track your
+            partnership tier, and get ready-to-use content ideas.</p>
         </div>
         """, unsafe_allow_html=True)
         st.write("")
@@ -515,8 +641,11 @@ def render_seller_side():
 def render_influencer_side():
     render_top_bar("Influencer Portal · Discover sellers matched to your niche, region & reach")
 
-    tab1, tab2, tab3 = st.tabs(["🧭 My Niche & Profile", "🔎 Recommended Sellers", "✨ Content Ideas"])
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🧭 My Niche & Profile", "🔎 Recommended Sellers", "🏆 Partnership & Stats", "✨ Content Ideas"
+    ])
 
+    # ---- TAB 1: Profile setup (bottom-up niche selection) ----
     with tab1:
         st.subheader("Tell us about you")
         st.caption("This is bottom-up by design — you choose what you want to brand for, we don't assign it to you.")
@@ -542,15 +671,19 @@ def render_influencer_side():
         st.info(f"📊 Based on your reach, you're a **{tier} creator** ({followers:,} followers).")
 
         if st.button("💾 Save Profile", use_container_width=True):
+            seed_name = name or "Creator"
+            seed = abs(hash(seed_name + state)) % (2**32)
+            baseline_sales = int(np.random.default_rng(seed).integers(20, 180))
             st.session_state.influencer_profile = {
-                "name": name or "Creator", "state": state, "city": city, "followers": followers,
+                "name": seed_name, "state": state, "city": city, "followers": followers,
                 "tier": tier, "niches": niches if niches else list(CATEGORY_DATA.keys()),
-                "languages": languages,
+                "languages": languages, "total_sales": baseline_sales,
             }
-            st.success("Profile saved! Head to 'Recommended Sellers' to see your matches.")
+            st.success("Profile saved! Head to 'Recommended Sellers' or 'Partnership & Stats' to explore.")
 
     profile = st.session_state.influencer_profile
 
+    # ---- TAB 2: Seller discovery & matching ----
     with tab2:
         if not profile:
             st.info("👈 Save your profile in the 'My Niche & Profile' tab first to see personalized matches.")
@@ -607,7 +740,78 @@ def render_influencer_side():
                 st.markdown(f"- Commission: {top['Commission %']}% — {'above' if top['_comm']>50 else 'below'} average for similar sellers")
                 st.markdown('</div>', unsafe_allow_html=True)
 
+    # ---- TAB 3: Gamified partnership status + stats dashboard ----
     with tab3:
+        if not profile:
+            st.info("👈 Save your profile in the 'My Niche & Profile' tab first to see your partnership status.")
+        else:
+            st.subheader("Your Partnership Status")
+            st.caption("Every 250 lifetime units sold advances your tier. Maintain at least 250 sales/month to keep your current tier.")
+
+            default_sales = profile.get("total_sales", 50)
+            total_sales = st.slider(
+                "🎮 Simulate your lifetime units sold (demo control)",
+                min_value=0, max_value=2000, value=int(default_sales), step=10
+            )
+            st.session_state.influencer_profile["total_sales"] = total_sales
+
+            info = get_tier(total_sales)
+
+            st.markdown(f"""
+            <div class="tier-card">
+                <h2>{info['name']}</h2>
+                <p>Lifetime units sold: <b>{total_sales:,}</b></p>
+                <p>Monthly stipend: <b>₹{info['stipend']:,}</b>{" (starts next month if newly reached)" if info['tier_number'] >= 1 else ""}</p>
+                <div>{''.join(f'<span class="perk-badge">✔ {p}</span>' for p in info['perks'])}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"**Progress to next tier** ({info['sales_needed_for_next']} more units needed → {info['next_threshold']} lifetime units)")
+            st.progress(int(info["progress_pct"]) / 100)
+
+            cat_df, state_df, trend_df, this_month_sales = generate_sales_breakdown(profile, total_sales)
+
+            if info["tier_number"] >= 1:
+                required = TIER_STEP
+                if this_month_sales < required:
+                    st.markdown(f"""
+                    <div class="at-risk">
+                    ⚠️ <b>At risk:</b> Last month you sold {this_month_sales} units, below the {required}/month needed to maintain
+                    <b>{info['name']}</b> status. If this continues, your tier — and stipend — may be downgraded next cycle.
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.success(f"✅ Last month you sold {this_month_sales} units — above the {required}/month needed to maintain your status.")
+
+            with st.expander("📋 View full partnership tier ladder"):
+                st.dataframe(tier_ladder_table(), use_container_width=True, hide_index=True)
+
+            st.markdown("---")
+            st.subheader("📊 Where your sales are coming from")
+
+            if total_sales == 0:
+                st.info("No sales yet — move the slider above to simulate your sales history and see your stats.")
+            else:
+                sc1, sc2 = st.columns(2)
+                with sc1:
+                    st.markdown("**By niche / category**")
+                    st.bar_chart(cat_df.set_index("Category"))
+                    if len(cat_df) > 0:
+                        top_cat = cat_df.iloc[0]
+                        st.caption(f"🏅 **{top_cat['Category']}** is your best-performing niche, driving {top_cat['Units Sold']/total_sales*100:.0f}% of your sales.")
+                with sc2:
+                    st.markdown("**By buyer location (top states)**")
+                    st.bar_chart(state_df.set_index("State"))
+                    if len(state_df) > 0:
+                        top_state = state_df.iloc[0]
+                        st.caption(f"📍 Most of your buyers are from **{top_state['State']}**, close to your own base in {profile['state']}.")
+
+                st.markdown("**Sales trend — last 6 months**")
+                st.line_chart(trend_df)
+                st.caption("Trend shown is directional (synthetic demo data), useful for spotting momentum month over month.")
+
+    # ---- TAB 4: Content generation ideas ----
+    with tab4:
         st.subheader("Content Ideas & Tactics")
         st.caption("Ready-to-use hooks and formats so you spend less time stuck on 'what do I post today'.")
 
