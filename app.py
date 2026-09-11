@@ -23,69 +23,151 @@ MEESHO_GOLD = "#C9A227"
 
 st.markdown(f"""
 <style>
-    .main-header {{
-        background: linear-gradient(90deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+    :root {{
+        --line: #E8D9E3;
+        --ink: #2B1625;
+        --muted: #6B5460;
     }}
-    .main-header h1 {{ color: white; margin: 0; font-size: 2rem; }}
-    .main-header p {{ color: #f0e0ea; margin: 0.2rem 0 0 0; font-size: 0.95rem; }}
+
+    .stApp {{
+        background: #FBF7FA;
+        color: var(--ink);
+    }}
+    .stApp, .stApp p, .stApp li, .stApp label, .stMarkdown, .stCaption {{
+        font-family: 'Inter', sans-serif;
+    }}
+    h1, h2, h3, .main-header h1, .role-card h2, .tier-card h2 {{
+        font-family: 'Sora', sans-serif;
+    }}
+
+    /* ---- Header ---- */
+    .main-header {{
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 62%, {MEESHO_ORANGE} 130%);
+        padding: 1.9rem 2.2rem;
+        border-radius: 14px;
+        margin-bottom: 1.6rem;
+        border-bottom: 3px solid {MEESHO_GOLD};
+    }}
+    .main-header::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255,255,255,0.16) 1.4px, transparent 1.4px);
+        background-size: 15px 15px;
+        opacity: 0.55;
+        pointer-events: none;
+    }}
+    .main-header h1 {{
+        position: relative;
+        color: white;
+        margin: 0;
+        font-size: 2.05rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }}
+    .main-header p {{
+        position: relative;
+        color: #FBE7F1;
+        margin: 0.3rem 0 0 0;
+        font-size: 0.98rem;
+    }}
+
+    /* ---- Callouts ---- */
     .rationale-box {{
         background: #FFF8E1;
-        border-left: 4px solid {MEESHO_ORANGE};
-        padding: 0.9rem 1.1rem;
-        border-radius: 6px;
-        margin-top: 0.6rem;
+        border-left: 3px solid {MEESHO_ORANGE};
+        padding: 1rem 1.2rem;
+        border-radius: 4px 10px 10px 4px;
+        margin-top: 0.7rem;
     }}
+    .at-risk {{
+        background: #FDECEE;
+        border-left: 3px solid #C0392B;
+        padding: 0.9rem 1.2rem;
+        border-radius: 4px 10px 10px 4px;
+        margin-top: 0.7rem;
+    }}
+
+    /* ---- Idea cards ---- */
     .idea-card {{
-        background: #F5F0FF;
-        border: 1px solid #DED0F0;
-        border-radius: 10px;
-        padding: 0.9rem 1.1rem;
-        margin-bottom: 0.7rem;
+        background: #FFFFFF;
+        border: 1px solid var(--line);
+        border-left: 3px solid {MEESHO_PURPLE};
+        border-radius: 4px 10px 10px 4px;
+        padding: 0.85rem 1.1rem;
+        margin-bottom: 0.65rem;
     }}
+
+    /* ---- Buttons ---- */
     .stButton>button {{
         background-color: {MEESHO_PURPLE};
         color: white;
-        border-radius: 8px;
+        border-radius: 9px;
         font-weight: 600;
         border: none;
-        padding: 0.5rem 1.5rem;
+        padding: 0.55rem 1.6rem;
+        transition: background-color 0.15s ease;
     }}
     .stButton>button:hover {{ background-color: {MEESHO_PINK}; color: white; }}
+
+    /* ---- Role cards ---- */
     .role-card {{
-        border: 2px solid #E8D5E0;
-        border-radius: 16px;
-        padding: 2.2rem 1.5rem;
+        border: 1px solid var(--line);
+        border-top: 3px solid {MEESHO_PURPLE};
+        border-radius: 6px 6px 16px 16px;
+        padding: 2.3rem 1.6rem;
         text-align: center;
-        background: #FAF5F8;
+        background: #FFFFFF;
         height: 100%;
     }}
-    .role-card h2 {{ color: {MEESHO_PURPLE}; }}
+    .role-card h2 {{ color: {MEESHO_PURPLE}; font-size: 1.4rem; margin-bottom: 0.5rem; }}
+    .role-card p {{ color: var(--muted); line-height: 1.55; }}
+
+    /* ---- Partnership tier card ---- */
     .tier-card {{
-        background: linear-gradient(135deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 100%);
-        border-radius: 14px;
-        padding: 1.5rem 1.8rem;
+        position: relative;
+        background: linear-gradient(150deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 100%);
+        border-radius: 16px;
+        padding: 1.8rem 2rem;
         color: white;
-        margin-bottom: 1rem;
+        margin-bottom: 1.1rem;
+        border-bottom: 3px solid {MEESHO_GOLD};
     }}
-    .tier-card h2 {{ margin: 0 0 0.3rem 0; color: white; }}
-    .tier-card p {{ margin: 0.15rem 0; color: #f5e6ee; }}
+    .tier-card h2 {{ margin: 0 0 0.1rem 0; color: white; font-size: 1.45rem; }}
+    .tier-card p {{ margin: 0.2rem 0; color: #F5E6EE; font-size: 0.95rem; }}
+    .stipend-figure {{
+        font-family: 'Sora', sans-serif;
+        font-weight: 800;
+        font-size: 2.15rem;
+        color: {MEESHO_GOLD};
+        line-height: 1.15;
+        margin-top: 0.3rem;
+    }}
     .perk-badge {{
         display: inline-block;
-        background: rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.16);
+        border: 1px solid rgba(255,255,255,0.28);
         border-radius: 20px;
-        padding: 0.25rem 0.8rem;
-        margin: 0.2rem 0.3rem 0.2rem 0;
-        font-size: 0.85rem;
+        padding: 0.28rem 0.85rem;
+        margin: 0.3rem 0.35rem 0 0;
+        font-size: 0.83rem;
     }}
-    .at-risk {{
-        background: #FFEBEE;
-        border-left: 4px solid #D32F2F;
-        padding: 0.8rem 1.1rem;
-        border-radius: 6px;
-        margin-top: 0.6rem;
+
+    /* ---- Tabs ---- */
+    .stTabs [aria-selected="true"] {{ color: {MEESHO_PURPLE} !important; font-weight: 600; }}
+    .stTabs [data-baseweb="tab-highlight"] {{ background-color: {MEESHO_PINK} !important; }}
+
+    /* ---- Metrics ---- */
+    [data-testid="stMetricValue"] {{ font-family: 'Sora', sans-serif; color: {MEESHO_PURPLE}; font-weight: 700; }}
+    [data-testid="stMetricLabel"] {{ color: var(--muted); }}
+
+    /* ---- Progress bar ---- */
+    .stProgress > div > div > div > div {{
+        background-image: linear-gradient(90deg, {MEESHO_PURPLE}, {MEESHO_PINK});
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -137,9 +219,23 @@ LANGUAGES = ["Hindi", "English", "Bengali", "Tamil", "Telugu", "Marathi", "Gujar
 
 # Gamified partnership tier thresholds (every 250 units)
 TIER_STEP = 250
-BASE_STIPEND = 5000        # stipend at first tier (Meesho Partner)
+BASE_STIPEND = 8000        # stipend at first tier (Meesho Partner)
 STIPEND_INCREMENT = 3000   # increase per additional 250-unit tier
 CROSS_PROMO_TIER = 2       # tier number at which cross-promotion unlocks
+
+# Named partnership tiers, in order. MAX_TIER is the top rung — once a
+# creator reaches it, further sales keep the tier and stipend rather than
+# generating a "Level N" suffix.
+TIER_NAMES = [
+    "Meesho Creator",
+    "Meesho Partner",
+    "Meesho Partner+",
+    "Meesho Gold Creator",
+    "Meesho Platinum Creator",
+    "Meesho Elite Creator",
+    "Meesho Icon Creator",
+]
+MAX_TIER = len(TIER_NAMES) - 1
 
 # ----------------------------------------------------------------------------
 # COMMISSION RECOMMENDATION ENGINE (seller side)
@@ -359,26 +455,26 @@ GENERAL_TACTICS = [
 # ----------------------------------------------------------------------------
 def get_tier(total_sales):
     """Every TIER_STEP (250) lifetime units sold advances the influencer one
-    partnership tier. Tier 0 = independent creator, no stipend. Tier 1+ =
-    Meesho Partner with a fixed monthly stipend that grows each tier.
-    Cross-promotion unlocks at CROSS_PROMO_TIER."""
-    tier_number = int(total_sales // TIER_STEP)
-
-    if tier_number == 0:
-        name = "🌱 Independent Creator"
-    elif tier_number == 1:
-        name = "🤝 Meesho Partner"
-    elif tier_number == 2:
-        name = "⭐ Meesho Partner+ (Cross-Promo Eligible)"
-    else:
-        name = f"👑 Meesho Elite Partner — Level {tier_number - 1}"
+    partnership tier, from Meesho Creator (no stipend) up through Meesho
+    Icon Creator (MAX_TIER). Cross-promotion unlocks at CROSS_PROMO_TIER.
+    Once MAX_TIER is reached, further sales hold the top tier and stipend
+    rather than generating a new rung."""
+    raw_tier_number = int(total_sales // TIER_STEP)
+    tier_number = min(raw_tier_number, MAX_TIER)
+    name = TIER_NAMES[tier_number]
 
     stipend = 0 if tier_number == 0 else BASE_STIPEND + (tier_number - 1) * STIPEND_INCREMENT
     cross_promo = tier_number >= CROSS_PROMO_TIER
-    next_threshold = (tier_number + 1) * TIER_STEP
-    sales_into_tier = total_sales - tier_number * TIER_STEP
-    progress_pct = min(100, sales_into_tier / TIER_STEP * 100)
-    sales_needed_for_next = max(0, next_threshold - total_sales)
+
+    if raw_tier_number < MAX_TIER:
+        next_threshold = (raw_tier_number + 1) * TIER_STEP
+        sales_into_tier = total_sales - raw_tier_number * TIER_STEP
+        progress_pct = min(100, sales_into_tier / TIER_STEP * 100)
+        sales_needed_for_next = max(0, next_threshold - total_sales)
+    else:
+        next_threshold = MAX_TIER * TIER_STEP
+        progress_pct = 100
+        sales_needed_for_next = 0
 
     perks = []
     if tier_number >= 1:
@@ -388,6 +484,8 @@ def get_tier(total_sales):
         perks.append("Eligible for collabs with bigger creators")
     if tier_number == 0:
         perks.append("Standard per-sale commission only")
+    if tier_number == MAX_TIER:
+        perks.append("Top partnership tier reached")
 
     return {
         "tier_number": tier_number, "name": name, "stipend": stipend,
@@ -397,22 +495,21 @@ def get_tier(total_sales):
     }
 
 
-def tier_ladder_table(max_tier=5):
+def tier_ladder_table():
     rows = []
-    for t in range(0, max_tier + 1):
+    for t in range(0, MAX_TIER + 1):
         sales_required = t * TIER_STEP
+        name = TIER_NAMES[t]
         if t == 0:
-            name, stipend, perk = "Independent Creator", "—", "Per-sale commission only"
+            stipend, perk = "—", "Per-sale commission only"
         elif t == 1:
-            name = "Meesho Partner"
-            stipend = f"₹{BASE_STIPEND:,}/mo"
-            perk = "Fixed monthly stipend begins"
+            stipend, perk = f"₹{BASE_STIPEND:,}/mo", "Fixed monthly stipend begins"
         elif t == 2:
-            name = "Meesho Partner+"
-            stipend = f"₹{BASE_STIPEND + STIPEND_INCREMENT:,}/mo"
-            perk = "+ Cross-promotion on official pages"
+            stipend, perk = f"₹{BASE_STIPEND + STIPEND_INCREMENT:,}/mo", "+ Cross-promotion on official pages"
+        elif t == MAX_TIER:
+            stipend = f"₹{BASE_STIPEND + (t - 1) * STIPEND_INCREMENT:,}/mo"
+            perk = "+ Top partnership tier"
         else:
-            name = f"Meesho Elite Partner Lvl {t - 1}"
             stipend = f"₹{BASE_STIPEND + (t - 1) * STIPEND_INCREMENT:,}/mo"
             perk = "+ Priority collabs with bigger creators"
         rows.append({"Lifetime Sales Needed": sales_required, "Tier": name, "Monthly Stipend": stipend, "Unlocks": perk})
@@ -756,12 +853,15 @@ def render_influencer_side():
             st.session_state.influencer_profile["total_sales"] = total_sales
 
             info = get_tier(total_sales)
+            stipend_display = f"₹{info['stipend']:,}" if info['tier_number'] >= 1 else "—"
+            stipend_caption = "Monthly stipend" + (" · begins next cycle if just reached" if info['tier_number'] >= 1 else " · unlocked from Meesho Partner (250 units)")
 
             st.markdown(f"""
             <div class="tier-card">
                 <h2>{info['name']}</h2>
                 <p>Lifetime units sold: <b>{total_sales:,}</b></p>
-                <p>Monthly stipend: <b>₹{info['stipend']:,}</b>{" (starts next month if newly reached)" if info['tier_number'] >= 1 else ""}</p>
+                <div class="stipend-figure">{stipend_display}</div>
+                <p>{stipend_caption}</p>
                 <div>{''.join(f'<span class="perk-badge">✔ {p}</span>' for p in info['perks'])}</div>
             </div>
             """, unsafe_allow_html=True)
