@@ -171,6 +171,47 @@ st.markdown(f"""
     .stProgress > div > div > div > div {{
         background-image: linear-gradient(90deg, {MEESHO_PURPLE}, {MEESHO_PINK});
     }}
+
+    /* ---- Form fields: give every input a visible boundary ---- */
+    .stTextInput input, .stNumberInput input, .stTextArea textarea {{
+        border: 1.5px solid var(--line) !important;
+        border-radius: 8px !important;
+        background: #FFFFFF !important;
+        padding: 0.5rem 0.75rem !important;
+    }}
+    .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {{
+        border-color: {MEESHO_PINK} !important;
+        box-shadow: 0 0 0 2px rgba(233,30,99,0.15) !important;
+    }}
+    .stSelectbox div[data-baseweb="select"] > div,
+    .stMultiSelect div[data-baseweb="select"] > div {{
+        border: 1.5px solid var(--line) !important;
+        border-radius: 8px !important;
+        background: #FFFFFF !important;
+    }}
+    .stSelectbox div[data-baseweb="select"]:focus-within > div,
+    .stMultiSelect div[data-baseweb="select"]:focus-within > div {{
+        border-color: {MEESHO_PINK} !important;
+        box-shadow: 0 0 0 2px rgba(233,30,99,0.15) !important;
+    }}
+    .stMultiSelect span[data-baseweb="tag"] {{
+        background-color: {MEESHO_PURPLE} !important;
+    }}
+    .stSlider [role="slider"] {{
+        background-color: {MEESHO_PURPLE} !important;
+        border-color: {MEESHO_PURPLE} !important;
+    }}
+
+    /* ---- Give tables and expanders the same visible boundary ---- */
+    [data-testid="stDataFrame"] {{
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+    }}
+    [data-testid="stExpander"] {{
+        border: 1px solid var(--line) !important;
+        border-radius: 10px !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -615,7 +656,7 @@ def render_landing():
         </div>
         """, unsafe_allow_html=True)
         st.write("")
-        if st.button("Continue as seller", use_container_width=True, key="pick_seller"):
+        if st.button("Continue as seller", use_container_width=True, key="pick_seller", icon=":material/storefront:"):
             st.session_state.role = "seller"
             st.rerun()
 
@@ -629,7 +670,7 @@ def render_landing():
         </div>
         """, unsafe_allow_html=True)
         st.write("")
-        if st.button("Continue as influencer", use_container_width=True, key="pick_influencer"):
+        if st.button("Continue as influencer", use_container_width=True, key="pick_influencer", icon=":material/groups:"):
             st.session_state.role = "influencer"
             st.rerun()
 
@@ -651,7 +692,7 @@ def render_top_bar(role_label):
         """, unsafe_allow_html=True)
     with c3:
         st.write("")
-        if st.button("Switch profile", use_container_width=True):
+        if st.button("Switch profile", use_container_width=True, icon=":material/swap_horiz:"):
             st.session_state.role = None
             st.rerun()
     st.markdown('<div class="portal-rule"></div>', unsafe_allow_html=True)
@@ -680,11 +721,11 @@ def render_seller_side():
             stock_units = st.number_input("Stock Available (units)", min_value=1, max_value=5000, value=200, step=10)
             st.write("")
             st.write("")
-            get_rec = st.button("Get commission recommendation", use_container_width=True)
+            get_rec = st.button("Get commission recommendation", use_container_width=True, icon=":material/search:")
 
         if get_rec:
             if not product_name:
-                st.warning("Please enter a product name to continue.")
+                st.warning("Please enter a product name to continue.", icon=":material/warning:")
             else:
                 rec = recommend_commission(category, price, cogs, stock_units)
                 st.session_state["last_rec"] = rec
@@ -731,14 +772,14 @@ def render_seller_side():
             elif chosen >= rec['point']:
                 st.caption("At or above the recommended level — this should attract healthy influencer interest.")
 
-            if st.button("Confirm & list product"):
+            if st.button("Confirm & list product", icon=":material/check_circle:"):
                 new_row = {
                     "Product": product_name, "Category": category, "Price (₹)": price,
                     "Recommended %": rec['point'], "Your Commission %": chosen,
                     "Interest Score": round(score), "Status": "Live"
                 }
                 st.session_state.listings = pd.concat([st.session_state.listings, pd.DataFrame([new_row])], ignore_index=True)
-                st.success(f"'{product_name}' listed. It's now visible to influencers browsing {category}.")
+                st.success(f"'{product_name}' listed. It's now visible to influencers browsing {category}.", icon=":material/check_circle:")
                 del st.session_state["last_rec"]
 
     with tab2:
@@ -754,7 +795,7 @@ def render_seller_side():
         st.bar_chart(chart_df)
         below_market = df[df["Your Commission %"] < df["Recommended %"] - 1]
         if len(below_market) > 0:
-            st.warning(f"{len(below_market)} product(s) are below the recommended commission and may be getting less influencer traction: " + ", ".join(below_market["Product"].tolist()))
+            st.warning(f"{len(below_market)} product(s) are below the recommended commission and may be getting less influencer traction: " + ", ".join(below_market["Product"].tolist()), icon=":material/warning:")
 
 
 # ----------------------------------------------------------------------------
@@ -790,9 +831,9 @@ def render_influencer_side():
             tier = "Mid-tier"
         else:
             tier = "Macro"
-        st.info(f"Based on your reach, you're a **{tier} creator** ({followers:,} followers).")
+        st.info(f"Based on your reach, you're a **{tier} creator** ({followers:,} followers).", icon=":material/insights:")
 
-        if st.button("Save profile", use_container_width=True):
+        if st.button("Save profile", use_container_width=True, icon=":material/save:"):
             seed_name = name or "Creator"
             seed = abs(hash(seed_name + state)) % (2**32)
             baseline_sales = int(np.random.default_rng(seed).integers(20, 180))
@@ -801,14 +842,14 @@ def render_influencer_side():
                 "tier": tier, "niches": niches if niches else list(CATEGORY_DATA.keys()),
                 "languages": languages, "total_sales": baseline_sales,
             }
-            st.success("Profile saved. Head to 'Recommended sellers' or 'Partnership & stats' to explore.")
+            st.success("Profile saved. Head to 'Recommended sellers' or 'Partnership & stats' to explore.", icon=":material/check_circle:")
 
     profile = st.session_state.influencer_profile
 
     # ---- TAB 2: Seller discovery & matching ----
     with tab2:
         if not profile:
-            st.info("Save your profile in the 'My niche & profile' tab first to see personalized matches.")
+            st.info("Save your profile in the 'My niche & profile' tab first to see personalized matches.", icon=":material/info:")
         else:
             st.subheader(f"Sellers matched to {profile['name']}")
             st.caption(f"{profile['tier']} creator · {profile['city'] or profile['state']}, {profile['state']} · Niches: {', '.join(profile['niches'])}")
@@ -865,7 +906,7 @@ def render_influencer_side():
     # ---- TAB 3: Gamified partnership status + stats dashboard ----
     with tab3:
         if not profile:
-            st.info("Save your profile in the 'My niche & profile' tab first to see your partnership status.")
+            st.info("Save your profile in the 'My niche & profile' tab first to see your partnership status.", icon=":material/info:")
         else:
             st.subheader("Your Partnership Status")
             st.caption("Every 250 lifetime units sold advances your tier. Maintain at least 250 sales/month to keep your current tier.")
@@ -906,16 +947,16 @@ def render_influencer_side():
                     </div>
                     """, unsafe_allow_html=True)
                 else:
-                    st.success(f"Last month you sold {this_month_sales} units — above the {required}/month needed to maintain your status.")
+                    st.success(f"Last month you sold {this_month_sales} units — above the {required}/month needed to maintain your status.", icon=":material/trending_up:")
 
-            with st.expander("View full partnership tier ladder"):
+            with st.expander("View full partnership tier ladder", icon=":material/military_tech:"):
                 st.dataframe(tier_ladder_table(), use_container_width=True, hide_index=True)
 
             st.markdown("---")
             st.subheader("Where your sales are coming from")
 
             if total_sales == 0:
-                st.info("No sales yet — move the slider above to simulate your sales history and see your stats.")
+                st.info("No sales yet — move the slider above to simulate your sales history and see your stats.", icon=":material/bar_chart:")
             else:
                 sc1, sc2 = st.columns(2)
                 with sc1:
@@ -945,7 +986,7 @@ def render_influencer_side():
         else:
             niche_choice = st.selectbox("Get ideas for", list(CATEGORY_DATA.keys()))
 
-        if st.button("Generate content ideas", use_container_width=True):
+        if st.button("Generate content ideas", use_container_width=True, icon=":material/auto_awesome:"):
             hooks = random.sample(CONTENT_HOOKS[niche_choice], k=min(3, len(CONTENT_HOOKS[niche_choice])))
             tactics = random.sample(GENERAL_TACTICS, k=3)
 
@@ -957,7 +998,7 @@ def render_influencer_side():
             for t in tactics:
                 st.markdown(f'<div class="idea-card tactic">{t}</div>', unsafe_allow_html=True)
         else:
-            st.info("Click 'Generate content ideas' to get a fresh set of hooks and tactics.")
+            st.info("Click 'Generate content ideas' to get a fresh set of hooks and tactics.", icon=":material/auto_awesome:")
 
 
 # ----------------------------------------------------------------------------
