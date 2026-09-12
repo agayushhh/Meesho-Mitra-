@@ -5,11 +5,11 @@ how a data-backed commission recommendation system can help sellers attract
 the right beauty & personal care (BPC) influencers, and how influencers can
 discover sellers bottom-up instead of top-down brand assignment.
 
-**Live demo:** _add your deployed Streamlit Cloud link here after deployment_
+**Live demo:** https://kihgmzokt8vzshzaqwuwbm.streamlit.app/
 
 ## Current scope
-- ✅ Seller side — list products, get explainable commission recommendations, track listings
-- 🔜 Influencer side — niche/region selection, seller discovery & matching, content idea generator
+- Seller side — list products, get explainable commission recommendations, track listings
+- Influencer side — niche/region selection, seller discovery & matching, content idea generator
 
 ## Run locally
 ```bash
