@@ -2,13 +2,35 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import random
+from pathlib import Path
+
+try:
+    from PIL import Image as PILImage
+except ImportError:
+    PILImage = None
+
+# ----------------------------------------------------------------------------
+# BRAND ASSETS
+# ----------------------------------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent
+ASSETS_DIR = BASE_DIR / "assets"
+LOGO_FULL_PATH = ASSETS_DIR / "meesho-mitra-logo.png"   # full logo — landing hero only
+LOGO_MARK_PATH = ASSETS_DIR / "meesho-mitra-mark.png"   # icon-only mark — favicon + portal bar
+
+if PILImage is not None and LOGO_MARK_PATH.exists():
+    try:
+        PAGE_ICON = PILImage.open(LOGO_MARK_PATH)
+    except Exception:
+        PAGE_ICON = "M"
+else:
+    PAGE_ICON = "M"
 
 # ----------------------------------------------------------------------------
 # PAGE CONFIG
 # ----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Meesho Mitra",
-    page_icon="🤝",
+    page_icon=PAGE_ICON,
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -31,50 +53,16 @@ st.markdown(f"""
         --muted: #6B5460;
     }}
 
-    .stApp {{
-        background: #FBF7FA;
-        color: var(--ink);
-    }}
+    .stApp {{ background: #FBF7FA; color: var(--ink); }}
     .stApp, .stApp p, .stApp li, .stApp label, .stMarkdown, .stCaption {{
         font-family: 'Inter', sans-serif;
     }}
-    h1, h2, h3, .main-header h1, .role-card h2, .tier-card h2 {{
-        font-family: 'Sora', sans-serif;
-    }}
+    h1, h2, h3, .role-card h2 {{ font-family: 'Sora', sans-serif; }}
 
-    /* ---- Header ---- */
-    .main-header {{
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 62%, {MEESHO_ORANGE} 130%);
-        padding: 1.9rem 2.2rem;
-        border-radius: 14px;
-        margin-bottom: 1.6rem;
-        border-bottom: 3px solid {MEESHO_GOLD};
-    }}
-    .main-header::before {{
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image: radial-gradient(rgba(255,255,255,0.16) 1.4px, transparent 1.4px);
-        background-size: 15px 15px;
-        opacity: 0.55;
-        pointer-events: none;
-    }}
-    .main-header h1 {{
-        position: relative;
-        color: white;
-        margin: 0;
-        font-size: 2.05rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-    }}
-    .main-header p {{
-        position: relative;
-        color: #FBE7F1;
-        margin: 0.3rem 0 0 0;
-        font-size: 0.98rem;
-    }}
+    /* ---- Portal top bar (slim, no gradient — the wordmark + gold rule carry the brand) ---- */
+    .portal-title {{ font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.2rem; color: var(--ink); line-height: 1.25; }}
+    .portal-subtitle {{ font-size: 0.85rem; color: var(--muted); margin-top: 2px; }}
+    .portal-rule {{ height: 3px; background: {MEESHO_GOLD}; border-radius: 2px; margin: 0.7rem 0 1.5rem; width: 100%; }}
 
     /* ---- Callouts ---- */
     .rationale-box {{
@@ -92,7 +80,7 @@ st.markdown(f"""
         margin-top: 0.7rem;
     }}
 
-    /* ---- Idea cards ---- */
+    /* ---- Idea cards (purple = content hook, orange = tactic) ---- */
     .idea-card {{
         background: #FFFFFF;
         border: 1px solid var(--line);
@@ -101,6 +89,7 @@ st.markdown(f"""
         padding: 0.85rem 1.1rem;
         margin-bottom: 0.65rem;
     }}
+    .idea-card.tactic {{ border-left-color: {MEESHO_ORANGE}; }}
 
     /* ---- Buttons ---- */
     .stButton>button {{
@@ -119,15 +108,22 @@ st.markdown(f"""
         border: 1px solid var(--line);
         border-top: 3px solid {MEESHO_PURPLE};
         border-radius: 6px 6px 16px 16px;
-        padding: 2.3rem 1.6rem;
+        padding: 2.2rem 1.6rem;
         text-align: center;
         background: #FFFFFF;
         height: 100%;
     }}
-    .role-card h2 {{ color: {MEESHO_PURPLE}; font-size: 1.4rem; margin-bottom: 0.5rem; }}
+    .role-badge {{
+        width: 44px; height: 44px; border-radius: 50%;
+        background: #F3E3EC; color: {MEESHO_PURPLE};
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem;
+        margin: 0 auto 0.8rem;
+    }}
+    .role-card h2 {{ color: {MEESHO_PURPLE}; font-size: 1.3rem; margin-bottom: 0.5rem; }}
     .role-card p {{ color: var(--muted); line-height: 1.55; }}
 
-    /* ---- Partnership tier card ---- */
+    /* ---- Partnership tier card (the one deliberate bold/gradient moment) ---- */
     .tier-card {{
         position: relative;
         background: linear-gradient(150deg, {MEESHO_PURPLE} 0%, {MEESHO_PINK} 100%);
@@ -156,6 +152,12 @@ st.markdown(f"""
         margin: 0.3rem 0.35rem 0 0;
         font-size: 0.83rem;
     }}
+
+    /* ---- Status chips (replace red/amber/green emoji dots) ---- */
+    .status-chip {{ display: inline-block; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }}
+    .chip-good {{ background: #E3F3EC; color: #1B6B4A; }}
+    .chip-mid  {{ background: #FFF3D9; color: #8A6415; }}
+    .chip-low  {{ background: #FBE4E4; color: #A23A3A; }}
 
     /* ---- Tabs ---- */
     .stTabs [aria-selected="true"] {{ color: {MEESHO_PURPLE} !important; font-weight: 600; }}
@@ -284,21 +286,21 @@ def recommend_commission(category, price, cogs, stock_units):
 
     rationale = []
     if saturation_adj > 0.3:
-        rationale.append(f"📈 **{category}** is a high-competition category on the creator side — a slightly higher commission helps your listing stand out.")
+        rationale.append(f"**{category}** is a high-competition category on the creator side — a slightly higher commission helps your listing stand out.")
     elif saturation_adj < -0.3:
-        rationale.append(f"🟢 **{category}** has lower creator saturation right now — you don't need to overpay to get noticed.")
+        rationale.append(f"**{category}** has lower creator saturation right now — you don't need to overpay to get noticed.")
     if demand_adj < -0.2:
-        rationale.append(f"🔥 Current market demand for **{category}** is strong — commission can stay moderate while still attracting interest.")
+        rationale.append(f"Current market demand for **{category}** is strong — commission can stay moderate while still attracting interest.")
     elif demand_adj > 0.2:
-        rationale.append(f"📉 Demand for **{category}** is comparatively softer — a touch higher commission compensates for extra selling effort.")
+        rationale.append(f"Demand for **{category}** is comparatively softer — a touch higher commission compensates for extra selling effort.")
     if price_adj > 0:
-        rationale.append(f"💰 At ₹{price:.0f}, a higher percentage keeps the absolute payout worthwhile for creators.")
+        rationale.append(f"At ₹{price:.0f}, a higher percentage keeps the absolute payout worthwhile for creators.")
     elif price_adj < 0:
-        rationale.append(f"💰 At ₹{price:.0f}, even a lower percentage translates into a solid absolute payout.")
+        rationale.append(f"At ₹{price:.0f}, even a lower percentage translates into a solid absolute payout.")
     if urgency_adj > 0:
-        rationale.append(f"📦 With {stock_units} units in stock, a small commission bump can help move inventory faster.")
+        rationale.append(f"With {stock_units} units in stock, a small commission bump can help move inventory faster.")
     if margin_capped:
-        rationale.append(f"⚠️ Capped to protect your minimum margin of {MIN_SELLER_MARGIN_PCT:.0f}% after costs.")
+        rationale.append(f"Capped to protect your minimum margin of {MIN_SELLER_MARGIN_PCT:.0f}% after costs.")
 
     return {
         "point": final_commission, "low": max(6.0, low), "high": high,
@@ -582,12 +584,22 @@ if "influencer_profile" not in st.session_state:
 # LANDING / PROFILE SELECTION PAGE
 # ----------------------------------------------------------------------------
 def render_landing():
-    st.markdown("""
-    <div class="main-header">
-        <h1>🤝 Meesho Mitra</h1>
-        <p>One portal, two sides — smart commission matching for Beauty & Personal Care</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if LOGO_FULL_PATH.exists():
+        c1, c2, c3 = st.columns([2, 1.3, 2])
+        with c2:
+            st.image(str(LOGO_FULL_PATH), use_container_width=True)
+    else:
+        st.markdown("<h1 style='text-align:center;'>Meesho Mitra</h1>", unsafe_allow_html=True)
+
+    st.markdown(
+        "<p style='text-align:center; color:#6B5460; font-size:1rem; margin-top:-0.4rem;'>"
+        "One portal, two sides — smart commission matching for beauty and personal care</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f"<div style='height:3px; width:64px; background:{MEESHO_GOLD}; margin:1rem auto 1.8rem; border-radius:2px;'></div>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown("### Continue as")
     st.write("")
@@ -596,26 +608,28 @@ def render_landing():
     with col1:
         st.markdown("""
         <div class="role-card">
-            <h2>🏪 Seller</h2>
+            <div class="role-badge">S</div>
+            <h2>Seller</h2>
             <p>List your BPC products and get a data-backed commission recommendation
             to attract the right influencers — without guessing what to pay.</p>
         </div>
         """, unsafe_allow_html=True)
         st.write("")
-        if st.button("Continue as Seller", use_container_width=True, key="pick_seller"):
+        if st.button("Continue as seller", use_container_width=True, key="pick_seller"):
             st.session_state.role = "seller"
             st.rerun()
 
     with col2:
         st.markdown("""
         <div class="role-card">
-            <h2>🎥 Influencer</h2>
+            <div class="role-badge">I</div>
+            <h2>Influencer</h2>
             <p>Pick your niche and region, discover sellers matched to you, track your
             partnership tier, and get ready-to-use content ideas.</p>
         </div>
         """, unsafe_allow_html=True)
         st.write("")
-        if st.button("Continue as Influencer", use_container_width=True, key="pick_influencer"):
+        if st.button("Continue as influencer", use_container_width=True, key="pick_influencer"):
             st.session_state.role = "influencer"
             st.rerun()
 
@@ -624,29 +638,32 @@ def render_landing():
 
 
 def render_top_bar(role_label):
-    c1, c2 = st.columns([5, 1])
+    c1, c2, c3 = st.columns([0.6, 5, 1.3])
     with c1:
+        if LOGO_MARK_PATH.exists():
+            st.image(str(LOGO_MARK_PATH), width=38)
+    with c2:
         st.markdown(f"""
-        <div class="main-header">
-            <h1>🤝 Meesho Mitra</h1>
-            <p>{role_label}</p>
+        <div style="padding-top:2px;">
+            <div class="portal-title">Meesho Mitra</div>
+            <div class="portal-subtitle">{role_label}</div>
         </div>
         """, unsafe_allow_html=True)
-    with c2:
+    with c3:
         st.write("")
-        st.write("")
-        if st.button("🔄 Switch Profile", use_container_width=True):
+        if st.button("Switch profile", use_container_width=True):
             st.session_state.role = None
             st.rerun()
+    st.markdown('<div class="portal-rule"></div>', unsafe_allow_html=True)
 
 
 # ----------------------------------------------------------------------------
 # SELLER SIDE
 # ----------------------------------------------------------------------------
 def render_seller_side():
-    render_top_bar("Seller Portal · Smart Commission Recommendations for Beauty & Personal Care")
+    render_top_bar("Seller portal · Smart commission recommendations for beauty and personal care")
 
-    tab1, tab2 = st.tabs(["➕ List a New Product", "📦 My Listings"])
+    tab1, tab2 = st.tabs(["List a new product", "My listings"])
 
     with tab1:
         st.subheader("List a new Beauty & Personal Care product")
@@ -663,7 +680,7 @@ def render_seller_side():
             stock_units = st.number_input("Stock Available (units)", min_value=1, max_value=5000, value=200, step=10)
             st.write("")
             st.write("")
-            get_rec = st.button("🔍 Get Commission Recommendation", use_container_width=True)
+            get_rec = st.button("Get commission recommendation", use_container_width=True)
 
         if get_rec:
             if not product_name:
@@ -676,7 +693,7 @@ def render_seller_side():
         if "last_rec" in st.session_state and st.session_state.get("last_product", {}).get("name") == product_name and product_name:
             rec = st.session_state["last_rec"]
             st.markdown("---")
-            st.markdown("### 💡 Recommendation")
+            st.markdown("### Recommendation")
 
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("Recommended Commission", f"{rec['point']}%")
@@ -699,21 +716,29 @@ def render_seller_side():
             st.markdown("#### Set your final commission")
             chosen = st.slider("Your Commission % (drag to adjust)", min_value=5.0, max_value=25.0, value=float(rec['point']), step=0.5)
             score = interest_score(chosen, rec['point'])
-            score_color = "🟢" if score >= 70 else ("🟡" if score >= 40 else "🔴")
-            st.markdown(f"**{score_color} Estimated Influencer Interest Score: {score:.0f}/100**")
+            if score >= 70:
+                score_label, score_class = "High interest", "chip-good"
+            elif score >= 40:
+                score_label, score_class = "Moderate interest", "chip-mid"
+            else:
+                score_label, score_class = "Low interest", "chip-low"
+            st.markdown(
+                f'<span class="status-chip {score_class}">{score_label} — {score:.0f}/100</span>',
+                unsafe_allow_html=True,
+            )
             if chosen < rec['point'] - 2:
                 st.caption("Below-market commission typically means fewer influencers pick up your product, and slower initial traction.")
             elif chosen >= rec['point']:
                 st.caption("At or above the recommended level — this should attract healthy influencer interest.")
 
-            if st.button("✅ Confirm & List Product"):
+            if st.button("Confirm & list product"):
                 new_row = {
                     "Product": product_name, "Category": category, "Price (₹)": price,
                     "Recommended %": rec['point'], "Your Commission %": chosen,
                     "Interest Score": round(score), "Status": "Live"
                 }
                 st.session_state.listings = pd.concat([st.session_state.listings, pd.DataFrame([new_row])], ignore_index=True)
-                st.success(f"'{product_name}' listed successfully! It's now visible to influencers browsing {category}.")
+                st.success(f"'{product_name}' listed. It's now visible to influencers browsing {category}.")
                 del st.session_state["last_rec"]
 
     with tab2:
@@ -729,17 +754,17 @@ def render_seller_side():
         st.bar_chart(chart_df)
         below_market = df[df["Your Commission %"] < df["Recommended %"] - 1]
         if len(below_market) > 0:
-            st.warning(f"⚠️ {len(below_market)} product(s) are below the recommended commission and may be getting less influencer traction: " + ", ".join(below_market["Product"].tolist()))
+            st.warning(f"{len(below_market)} product(s) are below the recommended commission and may be getting less influencer traction: " + ", ".join(below_market["Product"].tolist()))
 
 
 # ----------------------------------------------------------------------------
 # INFLUENCER SIDE
 # ----------------------------------------------------------------------------
 def render_influencer_side():
-    render_top_bar("Influencer Portal · Discover sellers matched to your niche, region & reach")
+    render_top_bar("Influencer portal · Discover sellers matched to your niche, region & reach")
 
     tab1, tab2, tab3, tab4 = st.tabs([
-        "🧭 My Niche & Profile", "🔎 Recommended Sellers", "🏆 Partnership & Stats", "✨ Content Ideas"
+        "My niche & profile", "Recommended sellers", "Partnership & stats", "Content ideas"
     ])
 
     # ---- TAB 1: Profile setup (bottom-up niche selection) ----
@@ -765,9 +790,9 @@ def render_influencer_side():
             tier = "Mid-tier"
         else:
             tier = "Macro"
-        st.info(f"📊 Based on your reach, you're a **{tier} creator** ({followers:,} followers).")
+        st.info(f"Based on your reach, you're a **{tier} creator** ({followers:,} followers).")
 
-        if st.button("💾 Save Profile", use_container_width=True):
+        if st.button("Save profile", use_container_width=True):
             seed_name = name or "Creator"
             seed = abs(hash(seed_name + state)) % (2**32)
             baseline_sales = int(np.random.default_rng(seed).integers(20, 180))
@@ -776,14 +801,14 @@ def render_influencer_side():
                 "tier": tier, "niches": niches if niches else list(CATEGORY_DATA.keys()),
                 "languages": languages, "total_sales": baseline_sales,
             }
-            st.success("Profile saved! Head to 'Recommended Sellers' or 'Partnership & Stats' to explore.")
+            st.success("Profile saved. Head to 'Recommended sellers' or 'Partnership & stats' to explore.")
 
     profile = st.session_state.influencer_profile
 
     # ---- TAB 2: Seller discovery & matching ----
     with tab2:
         if not profile:
-            st.info("👈 Save your profile in the 'My Niche & Profile' tab first to see personalized matches.")
+            st.info("Save your profile in the 'My niche & profile' tab first to see personalized matches.")
         else:
             st.subheader(f"Sellers matched to {profile['name']}")
             st.caption(f"{profile['tier']} creator · {profile['city'] or profile['state']}, {profile['state']} · Niches: {', '.join(profile['niches'])}")
@@ -832,22 +857,22 @@ def render_influencer_side():
                 top = view.iloc[0]
                 st.markdown('<div class="rationale-box">', unsafe_allow_html=True)
                 st.markdown(f"**Why {top['Seller']} is your top match:**")
-                st.markdown(f"- Niche alignment: {'✅ Direct category match' if top['_niche']==100 else '➖ Adjacent category'}")
-                st.markdown(f"- Region: {'✅ Same state' if top['_region']==100 else ('🟡 Same zone' if top['_region']==60 else '🔴 Different region')}")
+                st.markdown(f"- Niche alignment: {'Direct category match' if top['_niche']==100 else 'Adjacent category'}")
+                st.markdown(f"- Region: {'Same state' if top['_region']==100 else ('Same zone' if top['_region']==60 else 'Different region')}")
                 st.markdown(f"- Commission: {top['Commission %']}% — {'above' if top['_comm']>50 else 'below'} average for similar sellers")
                 st.markdown('</div>', unsafe_allow_html=True)
 
     # ---- TAB 3: Gamified partnership status + stats dashboard ----
     with tab3:
         if not profile:
-            st.info("👈 Save your profile in the 'My Niche & Profile' tab first to see your partnership status.")
+            st.info("Save your profile in the 'My niche & profile' tab first to see your partnership status.")
         else:
             st.subheader("Your Partnership Status")
             st.caption("Every 250 lifetime units sold advances your tier. Maintain at least 250 sales/month to keep your current tier.")
 
             default_sales = profile.get("total_sales", 50)
             total_sales = st.slider(
-                "🎮 Simulate your lifetime units sold (demo control)",
+                "Simulate your lifetime units sold (demo control)",
                 min_value=0, max_value=2000, value=int(default_sales), step=10
             )
             st.session_state.influencer_profile["total_sales"] = total_sales
@@ -862,7 +887,7 @@ def render_influencer_side():
                 <p>Lifetime units sold: <b>{total_sales:,}</b></p>
                 <div class="stipend-figure">{stipend_display}</div>
                 <p>{stipend_caption}</p>
-                <div>{''.join(f'<span class="perk-badge">✔ {p}</span>' for p in info['perks'])}</div>
+                <div>{''.join(f'<span class="perk-badge">{p}</span>' for p in info['perks'])}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -876,18 +901,18 @@ def render_influencer_side():
                 if this_month_sales < required:
                     st.markdown(f"""
                     <div class="at-risk">
-                    ⚠️ <b>At risk:</b> Last month you sold {this_month_sales} units, below the {required}/month needed to maintain
+                    <b>At risk:</b> Last month you sold {this_month_sales} units, below the {required}/month needed to maintain
                     <b>{info['name']}</b> status. If this continues, your tier — and stipend — may be downgraded next cycle.
                     </div>
                     """, unsafe_allow_html=True)
                 else:
-                    st.success(f"✅ Last month you sold {this_month_sales} units — above the {required}/month needed to maintain your status.")
+                    st.success(f"Last month you sold {this_month_sales} units — above the {required}/month needed to maintain your status.")
 
-            with st.expander("📋 View full partnership tier ladder"):
+            with st.expander("View full partnership tier ladder"):
                 st.dataframe(tier_ladder_table(), use_container_width=True, hide_index=True)
 
             st.markdown("---")
-            st.subheader("📊 Where your sales are coming from")
+            st.subheader("Where your sales are coming from")
 
             if total_sales == 0:
                 st.info("No sales yet — move the slider above to simulate your sales history and see your stats.")
@@ -898,13 +923,13 @@ def render_influencer_side():
                     st.bar_chart(cat_df.set_index("Category"))
                     if len(cat_df) > 0:
                         top_cat = cat_df.iloc[0]
-                        st.caption(f"🏅 **{top_cat['Category']}** is your best-performing niche, driving {top_cat['Units Sold']/total_sales*100:.0f}% of your sales.")
+                        st.caption(f"**{top_cat['Category']}** is your best-performing niche, driving {top_cat['Units Sold']/total_sales*100:.0f}% of your sales.")
                 with sc2:
                     st.markdown("**By buyer location (top states)**")
                     st.bar_chart(state_df.set_index("State"))
                     if len(state_df) > 0:
                         top_state = state_df.iloc[0]
-                        st.caption(f"📍 Most of your buyers are from **{top_state['State']}**, close to your own base in {profile['state']}.")
+                        st.caption(f"Most of your buyers are from **{top_state['State']}**, close to your own base in {profile['state']}.")
 
                 st.markdown("**Sales trend — last 6 months**")
                 st.line_chart(trend_df)
@@ -920,19 +945,19 @@ def render_influencer_side():
         else:
             niche_choice = st.selectbox("Get ideas for", list(CATEGORY_DATA.keys()))
 
-        if st.button("✨ Generate Content Ideas", use_container_width=True):
+        if st.button("Generate content ideas", use_container_width=True):
             hooks = random.sample(CONTENT_HOOKS[niche_choice], k=min(3, len(CONTENT_HOOKS[niche_choice])))
             tactics = random.sample(GENERAL_TACTICS, k=3)
 
-            st.markdown(f"#### 🎬 Hook ideas for {niche_choice}")
+            st.markdown(f"#### Hook ideas for {niche_choice}")
             for h in hooks:
-                st.markdown(f'<div class="idea-card">💡 {h}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="idea-card">{h}</div>', unsafe_allow_html=True)
 
-            st.markdown("#### 📌 General tactics to boost reach")
+            st.markdown("#### General tactics to boost reach")
             for t in tactics:
-                st.markdown(f'<div class="idea-card">📈 {t}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="idea-card tactic">{t}</div>', unsafe_allow_html=True)
         else:
-            st.info("Click 'Generate Content Ideas' to get a fresh set of hooks and tactics.")
+            st.info("Click 'Generate content ideas' to get a fresh set of hooks and tactics.")
 
 
 # ----------------------------------------------------------------------------
